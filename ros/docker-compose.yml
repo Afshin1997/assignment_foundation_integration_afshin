@@ -1,0 +1,17 @@
+services:
+  ros_noetic:
+    image: ros_noetic
+    container_name: ros_noetic
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    privileged: true
+    network_mode: "host"
+    environment:
+      - DISPLAY=unix${DISPLAY}
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "./:/workspace"
+    working_dir: "/workspace"
+    tty: true
+    stdin_open: true

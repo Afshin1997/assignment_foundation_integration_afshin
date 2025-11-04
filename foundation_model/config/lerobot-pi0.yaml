@@ -1,0 +1,53 @@
+seed: 42         # fix random seed for reproducibility
+
+# Training steps (how many gradient updates to run on your dataset)
+steps: 1000000
+
+# Logging & checkpoint frequency
+log_freq: 1000
+save_freq: 50000
+
+# Basic DataLoader config
+batch_size: 16
+num_workers: 10
+
+# Sampler config
+sampler_drop_n_first_frames: 50
+sampler_drop_n_last_frames: 50
+
+pretrained_path: lerobot/pi0
+
+# Info about the dataset you want to train on
+dataset:
+  repo_id: "teleop_smpl"
+  root: "/root/dataset/tx_ghost/teleop_smpl"
+  concat_specs:
+    - out_key: observation.state
+      in_keys: [observation.state, observation.force]
+
+# Define the policy / model config
+policy:
+  # This tells the training script to instantiate the pi0 model
+  type: pi0
+  device: "cuda"
+  push_to_hub: false
+
+  empty_cameras: 0
+
+  input_features:
+    observation.images.usb_cam:
+      type: VISUAL
+      shape: [3, 720, 1280]
+
+    observation.images.head_cam:
+      type: VISUAL
+      shape: [3, 480, 640]
+
+    observation.state:
+      type: STATE
+      shape: [16] # 10 (joints) + 6 (force) after concatenation
+
+  output_features:
+    action:
+      type: ACTION
+      shape: [10]

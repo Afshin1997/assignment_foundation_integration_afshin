@@ -1,0 +1,55 @@
+================================================================================
+COMPREHENSIVE COMPARISON REPORT
+Synchronous vs Threading vs Server-Client
+================================================================================
+
+SAMPLE COUNTS:
+--------------------------------------------------------------------------------
+ORIGINAL            : 2556 samples
+SYNC                : 1775 samples
+THREAD              : 2570 samples
+CLIENT_SERVER       : 2570 samples
+
+TIMING PERFORMANCE:
+--------------------------------------------------------------------------------
+Method               Mean (ms)    Std (ms)     Freq (Hz)   
+--------------------------------------------------------------------------------
+sync                      28.80        84.71        34.72
+thread                    20.00         0.57        50.00
+client_server             20.00         0.47        50.00
+
+SPEEDUP vs SYNCHRONOUS:
+--------------------------------------------------------------------------------
+thread              : 1.44x faster (30.6% improvement)
+client_server       : 1.44x faster (30.6% improvement)
+
+TRACKING ACCURACY (Average across all joints):
+--------------------------------------------------------------------------------
+Method               Avg MAE         Avg RMSE       
+--------------------------------------------------------------------------------
+sync                      0.220402        0.295013
+thread                    0.101737        0.159254
+client_server             0.103658        0.163546
+
+BEST & WORST TRACKING JOINTS:
+--------------------------------------------------------------------------------
+
+SYNC:
+  Best:  L1XP            MAE = 0.001679
+  Worst: H1ZR            MAE = 0.493575
+
+THREAD:
+  Best:  L1XP            MAE = 0.001893
+  Worst: A2ZR            MAE = 0.214598
+
+CLIENT_SERVER:
+  Best:  L1XP            MAE = 0.001854
+  Worst: A2ZR            MAE = 0.215269
+
+================================================================================
+CONCLUSION:
+================================================================================
+Fastest method: THREAD
+Most accurate method: THREAD
+
+✅ THREAD achieves both best speed AND best accuracy!

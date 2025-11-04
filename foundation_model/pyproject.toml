@@ -1,0 +1,13 @@
+[project]
+name = "tx-pizero"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.10.16"
+dependencies = [
+    "huggingface-hub[cli]>=0.29.3",
+    "poetry==1.8.5",
+    "pytest>=8.3.4",
+    "plotly>= 6.0.0", # for eval visualization
+    "opencv-python-headless>=4.11.0",
+]

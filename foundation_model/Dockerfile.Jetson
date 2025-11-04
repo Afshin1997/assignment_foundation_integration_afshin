@@ -1,0 +1,37 @@
+FROM dustynv/pytorch:2.6-r36.4.0-cu128
+SHELL ["/bin/bash", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+ENV WORKSPACE="/root/workspace"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        ca-certificates \
+        curl \
+        tzdata \
+        vim \
+        python3-pip python3.10-venv
+ENV TZ Asia/Tokyo
+
+WORKDIR ${WORKSPACE}
+COPY lerobot/pyproject.toml ${WORKSPACE}/lerobot/
+
+RUN python3 -m pip install --upgrade pip && python3 -m pip install --upgrade setuptools wheel
+# make venv with installed packages (with GPU acceleration)
+RUN python3 -m venv --system-site-packages venv
+RUN source ${WORKSPACE}/venv/bin/activate \
+ && pip install poetry==1.8.5 pytest==8.3.4
+
+WORKDIR ${WORKSPACE}/lerobot
+RUN source ${WORKSPACE}/venv/bin/activate \
+ && poetry config virtualenvs.create false \
+ && poetry install \
+ && poetry install --extras "pi0" \
+ && rm -rf ${WORKSPACE}/lerobot
+
+WORKDIR ${WORKSPACE}
+# install ROS integration related packages
+RUN apt-get install -y libgl1-mesa-dev libglib2.0-0 libsm6 libxrender1 libxext6 \
+ && source ${WORKSPACE}/venv/bin/activate \
+ && pip install --extra-index-url https://rospypi.github.io/simple rospy-all cv_bridge
+

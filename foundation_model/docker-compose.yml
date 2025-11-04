@@ -1,0 +1,31 @@
+services:
+  tx-pizero:
+    image: tx-pizero:${USER}
+    container_name: tx-pizero-${USER}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    privileged: true
+    network_mode: "host"
+    environment:
+      - DISPLAY=unix${DISPLAY}
+      - HF_LEROBOT_HOME=/root/dataset/hf_models
+      - HF_HOME=/root/dataset/hf_models
+      - TOKENIZERS_PARALLELISM=false
+      - PYTHONPATH=/root/workspace/tx-pizero/src
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "./:/root/workspace/tx-pizero"
+      - "/home/${USER}/tx_ghost/:/root/dataset/tx_ghost"
+      - "/home/${USER}/Models/:/root/models"
+    working_dir: "/root/workspace"
+    shm_size: '512g'
+    tty: true
+    stdin_open: true

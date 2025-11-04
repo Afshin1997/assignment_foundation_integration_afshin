@@ -1,0 +1,68 @@
+# === Data Files ===
+*.bag
+*.rosbag
+*.csv
+
+# === Python ===
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# === Large Directories ===
+# Models directory
+Models/
+models/
+foundation_model/Models/
+checkpoints/
+pretrained_model/
+
+# tx_ghost metadata
+tx_ghost/
+foundation_model/tx_ghost/
+
+# === Model Files ===
+*.safetensors
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.tar.gz
+*.tar
+
+# === ROS Bag Files (explicit paths) ===
+foundation_model/Teleoperation_Success_2025-4-27_9-14-33_teleop_session_1745712875_9081492.bag
+ros/scripts/Teleoperation_Success_2025-4-27_9-14-33_teleop_session_1745712875_9081492.bag
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.vscode
+.idea
+
+# === OS ===
+.DS_Store
+Thumbs.db
+.directory
+*.tmp
+
+# === Backend ===
+backend/__pycache__/
+
+# === Logs ===
+*.log
+logs/
+
+# === Build & Distribution ===
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# === Docker ===
+*.tar
+*.tar.gz

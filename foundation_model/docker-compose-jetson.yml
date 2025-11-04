@@ -1,0 +1,21 @@
+services:
+  tx-pizero-jetson:
+    image: tx-pizero-jetson
+    build:
+      context: ./
+      dockerfile: Dockerfile.Jetson
+    runtime: nvidia
+    privileged: true
+    network_mode: "host"
+    environment:
+      - DISPLAY=unix${DISPLAY}
+      - LEROBOT_HOME=/root/dataset/hf_models
+      - HF_HOME=/root/dataset/hf_models
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "./:/root/workspace/tx-pizero"
+      - "${DATASET_PATH:-/mnt/dataset}:/root/dataset"
+    working_dir: "/root/workspace"
+    shm_size: '16g'
+    tty: true
+    stdin_open: true
