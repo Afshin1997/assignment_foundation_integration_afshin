@@ -172,8 +172,8 @@ uv run python ./plot.py
 - **Threading:** Control loop continues at 50Hz, inference runs in parallel
 - **Server-Client:** Similar to threading, plus network overhead
 
-![Results](results/comparison_joints_dealy.png)
-![Results](results/comparison_errors_heavy_delay.png)
+![Results](ros/scripts/results/comparison_joints_dealy.png)
+![Results](ros/scripts/results/comparison_errors_heavy_delay.png)
 
 #### Without Delay (Pure ACT):
 - **All Methods:** Similar performance since ACT inference is fast
@@ -181,15 +181,15 @@ uv run python ./plot.py
   - Threading: Small overhead from thread synchronization
   - Server-Client: Network latency adds a bit of delay
 
-![Results](results/comparison_joints.png)
-![Results](results/comparison_errors.png)
+![Results](ros/scripts/results/comparison_joints.png)
+![Results](ros/scripts/results/comparison_errors.png)
 
 #### Trying higher action buffer Based on analysis with inference_profiler.py
 - **Lower MAE:** It means working at higher action buffer size (being conservative), we have Smaller errors on average, but with occasional large spikes
 - **Higher MSE:** It means we have more consistent errors, but slightly larger on average
 
-![Results](results/comparison_joints_inference_5_10.png)
-![Results](results/comparison_errors_inference_5_10.png)
+![Results](ros/scripts/results/comparison_joints_inference_5_10.png)
+![Results](ros/scripts/results/comparison_errors_inference_5_10.png)
 
 When inference is fast relative to the control cycle:
 - Synchronous works fine (inference completes within one cycle)
