@@ -17,8 +17,8 @@ def load_data(base_dir):
     
     methods = {
         'sync': 'inference',
-        'sync_5': 'inference_50_5', 
-        # 'client_server': 'client_server'
+        'thread': 'thread', 
+        'client_server': 'client_server'
     }
     
     
@@ -68,7 +68,7 @@ def calculate_metrics(data):
     print("PERFORMANCE METRICS")
     print("=" * 60)
     
-    for method in ['sync', 'sync_5', 'client_server']:
+    for method in ['sync', 'thread', 'client_server']:
         if method not in data:
             continue
             
@@ -108,7 +108,7 @@ def calculate_metrics(data):
     return metrics
 
 
-def plot_joint_comparisons(data, output_file='all_methods_comparison.png'):
+def plot_joint_comparisons(data, output_file='all_methods_comparison.svg'):
     """
     Create a comprehensive plot comparing all methods for all joints
     """
@@ -132,14 +132,14 @@ def plot_joint_comparisons(data, output_file='all_methods_comparison.png'):
     colors = {
         'original': '#2E86AB',      # Blue
         'sync': '#E63946',          # Red
-        'sync_5': '#06A77D',        # Green
+        'thread': '#06A77D',        # Green
         'client_server': '#F77F00'  # Orange
     }
     
     labels = {
         'original': 'Original (Ground Truth)',
         'sync': 'Synchronous',
-        'sync_5': 'Synchronous_5',
+        'thread': 'Synchronous_5',
         'client_server': 'Server-Client'
     }
     
@@ -160,7 +160,7 @@ def plot_joint_comparisons(data, output_file='all_methods_comparison.png'):
                    alpha=0.8)
         
         # Plot each method
-        for method in ['sync', 'sync_5', 'client_server']:
+        for method in ['sync', 'thread', 'client_server']:
             if method in data:
                 ax.plot(data[method][pos_col][:min_len],
                        label=labels[method],
@@ -177,7 +177,7 @@ def plot_joint_comparisons(data, output_file='all_methods_comparison.png'):
         
         # Add MAE text for each method
         text_y = 0.98
-        for method in ['sync', 'sync_5', 'client_server']:
+        for method in ['sync', 'thread', 'client_server']:
             if method in data:
                 original_vals = data['original'][pos_col][:min_len].values
                 method_vals = data[method][pos_col][:min_len].values
@@ -192,11 +192,11 @@ def plot_joint_comparisons(data, output_file='all_methods_comparison.png'):
                 text_y -= 0.08
     
     plt.tight_layout()
-    plt.savefig(output_file, dpi=150, bbox_inches='tight')
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print(f"\n✓ Joint comparison plot saved: {output_file}")
 
 
-def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
+def plot_error_comparison(data, metrics, output_file='error_comparison.svg'):
     """
     Plot error comparison across methods
     """
@@ -206,7 +206,7 @@ def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
     
     colors = {
         'sync': '#E63946',
-        'sync_5': '#06A77D',
+        'thread': '#06A77D',
         'client_server': '#F77F00'
     }
     
@@ -215,7 +215,7 @@ def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
     x = np.arange(10)
     width = 0.25
     
-    for idx, method in enumerate(['sync', 'sync_5', 'client_server']):
+    for idx, method in enumerate(['sync', 'thread', 'client_server']):
         if method in metrics:
             offset = (idx - 1) * width
             ax.bar(x + offset, metrics[method]['mae_per_joint'], 
@@ -235,12 +235,12 @@ def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
     methods = []
     avg_maes = []
     
-    for method in ['sync', 'sync_5', 'client_server']:
+    for method in ['sync', 'thread', 'client_server']:
         if method in metrics:
             methods.append(method.replace('_', '-').title())
             avg_maes.append(np.mean(metrics[method]['mae_per_joint']))
     
-    bars = ax.bar(methods, avg_maes, color=[colors[m] for m in ['sync', 'sync_5', 'client_server'] if m in metrics], alpha=0.8)
+    bars = ax.bar(methods, avg_maes, color=[colors[m] for m in ['sync', 'thread', 'client_server'] if m in metrics], alpha=0.8)
     ax.set_ylabel('Average MAE (rad)', fontsize=11)
     ax.set_title('Average MAE Comparison', fontsize=12, fontweight='bold')
     ax.grid(True, alpha=0.3, axis='y')
@@ -255,7 +255,7 @@ def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
     # Plot 3: RMSE comparison
     ax = axes[1, 0]
     
-    for idx, method in enumerate(['sync', 'sync_5', 'client_server']):
+    for idx, method in enumerate(['sync', 'thread', 'client_server']):
         if method in metrics:
             offset = (idx - 1) * width
             ax.bar(x + offset, metrics[method]['rmse_per_joint'],
@@ -278,7 +278,7 @@ def plot_error_comparison(data, metrics, output_file='error_comparison.png'):
 def main():
     parser = argparse.ArgumentParser(description="Compare all three inference methods")
     parser.add_argument('--base_dir', type=str, default='.',
-                       help='Base directory containing inference/, inference_5/, client_server/ subdirectories')
+                       help='Base directory containing inference/, thread/, client_server/ subdirectories')
     parser.add_argument('--output_prefix', type=str, default='comparison',
                        help='Prefix for output files')
     
@@ -292,8 +292,8 @@ def main():
     
     # Generate plots
     print("\nGenerating comparison plots...")
-    plot_joint_comparisons(data, f'comparison_joints.png')
-    plot_error_comparison(data, metrics, f'comparison_errors.png')
+    plot_joint_comparisons(data, f'comparison_joints.svg')
+    plot_error_comparison(data, metrics, f'comparison_errors.svg')
     
 
 if __name__ == "__main__":

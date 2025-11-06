@@ -1,23 +1,78 @@
 # Asynchronous Inference Implementation Comparison
 
+A comparison of three inference architectures for ACT-based robot control, demonstrating performance differences between synchronous and asynchronous approaches.
+
+---
+
+## 🎯 Overview
+
 This project implements and compares three different inference architectures for ACT-based robot control:
 
-1. **Synchronous** - Original blocking inference
-2. **Threading** - Non-blocking inference using Python threading
-3. **Server-Client** - Distributed inference using socket-based architecture
+| Method | Type | Use Case |
+|--------|------|----------|
+| **Synchronous** | Blocking inference | Baseline/lightweight models |
+| **Threading** | Non-blocking (Python threading) | Single-machine deployments |
+| **Server-Client** | Distributed (socket-based) | Multi-machine robotics systems |
 
-## 📋 Overview
+---
 
-### Problem Statement
-Foundation models introduce computational overhead that can block robot control loops. While ACT is lightweight, I simulated heavier model inference (e.g., PI0, SmolVLA) by adding an artificial 0.8s delay to demonstrate the benefits of asynchronous architectures.
+## 🚨 Problem Statement
 
-## 📊 Running Experiments
+Foundation models introduce computational overhead that can block robot control loops. While ACT is lightweight, this project simulates heavier model inference (e.g., PI0, SmolVLA) by adding an **artificial 0.8s delay** to demonstrate the benefits of asynchronous architectures.
 
-### Method 1: Synchronous (Baseline)
+### Why This Matters
 
-**Terminal 1 - Start Inference:**
+- **Synchronous**: Robot freezes during inference ❌
+- **Asynchronous**: Robot continues operating smoothly ✅
+
+---
+
+## 🏗️ Architecture Comparison
+
+### 1. Synchronous (Baseline)
+```
+Control Loop → [Wait for Inference] → Execute Action → Repeat
+```
+- **Pros**: Simple, no overhead
+- **Cons**: Blocks control loop during inference
+- **Best for**: Fast models
+
+### 2. Threading
+```
+Control Loop → Execute Last Action
+     ↓              ↑
+Inference Thread (parallel)
+```
+- **Pros**: Non-blocking, low overhead
+- **Cons**: single machine only
+- **Best for**: Single-machine deployments with heavy models
+
+### 3. Server-Client
+```
+Robot (Client) → Execute Last Action
+     ↓              ↑
+Inference Server (remote/parallel)
+```
+- **Pros**: Distributed, scalable, GPU offloading
+- **Cons**: Network latency, more complex
+- **Best for**: Multi-robot systems
+
+---
+
+## 🚀 Getting Started
+
+
+## 🧪 Running Experiments
+
+### Experiment 1: Synchronous (Baseline)
+
+<details>
+<summary><b>Click to expand instructions</b></summary>
+
+#### Terminal 1 - Start Inference
+
 ```bash
-cd <assignment_foundation_integration>/foundation_model
+cd assignment_foundation_integration_afshin/foundation_model
 docker compose build
 docker compose up -d
 docker exec -it <container-name> bash
@@ -30,12 +85,12 @@ uv run python ./tx-pizero/src/inference/inference.py \
     -l 1.0 \
     -i -1 \
     -o teleop_mode
-
 ```
 
-**Terminal 2 - Run Evaluation:**
+#### Terminal 2 - Run Evaluation
+
 ```bash
-cd <assignment_foundation_integration>/ros
+cd assignment_foundation_integration_afshin/ros
 docker compose up -d
 docker exec -it <container-name> bash
 
@@ -44,20 +99,30 @@ roscore &
 cd scripts
 ./analyze_joint.sh /Teleoperation_Success_2025-4-27_9-14-33_teleop_session_1745712875_9081492.bag
 ```
-and you have to wait to finish the trajectories which takes about 58 seconds.
 
-**Outputs:**
-- `inference_2/org.csv` - Original joint states
-- `inference_2/infer.csv` - Inference predictions
-- `inference_2/all_joints_comparison.png` - Visualization
+⏱️ **Wait Time**: ~58 seconds for trajectory completion
+
+#### Outputs
+```
+inference/
+├── org.csv                      # Original joint states
+├── infer.csv                    # Inference predictions
+└── all_joints_comparison.png    # Visualization
+```
+
+</details>
 
 ---
 
-### Method 2: Threading
+### Experiment 2: Threading
 
-**Terminal 1 - Start Threaded Inference:**
+<details>
+<summary><b>Click to expand instructions</b></summary>
+
+#### Terminal 1 - Start Threaded Inference
+
 ```bash
-cd <assignment_foundation_integration>/foundation_model
+cd assignment_foundation_integration_afshin/foundation_model
 docker exec -it <container-name> bash
 
 # Inside container
@@ -68,30 +133,39 @@ uv run python ./tx-pizero/src/inference/inference_thread.py \
     -l 1.0 \
     -i -1 \
     -o teleop_mode
-
 ```
 
-**Terminal 2 - Run Evaluation:**
+#### Terminal 2 - Run Evaluation
+
 ```bash
-cd <assignment_foundation_integration>/ros
+cd assignment_foundation_integration_afshin/ros
 docker exec -it <container-name> bash
 
 cd scripts
 ./analyze_joint.sh /Teleoperation_Success_2025-4-27_9-14-33_teleop_session_1745712875_9081492.bag
 ```
 
-**Outputs:**
-- `thread_2/org.csv`
-- `thread_2/infer.csv`
-- `thread_2/all_joints_comparison.png`
+#### Outputs
+```
+thread/
+├── org.csv
+├── infer.csv
+└── all_joints_comparison.png
+```
+
+</details>
 
 ---
 
-### Method 3: Server-Client
+### Experiment 3: Server-Client
 
-**Terminal 1 - Start Inference Server:**
+<details>
+<summary><b>Click to expand instructions</b></summary>
+
+#### Terminal 1 - Start Inference Server
+
 ```bash
-cd <assignment_foundation_integration>/foundation_model
+cd assignment_foundation_integration_afshin/foundation_model
 docker exec -it <container-name> bash
 
 # Inside container
@@ -100,13 +174,12 @@ uv run python ./tx-pizero/src/inference/inference_server.py \
     --port 50051 \
     -c /root/models/2025-06-25-17-17-09_act_clean_data/checkpoints/450000/pretrained_model \
     --device cuda
-
-# Server will start listening...
 ```
 
-**Terminal 2 - Start Client:**
+#### Terminal 2 - Start Client
+
 ```bash
-cd <assignment_foundation_integration>/foundation_model
+cd assignment_foundation_integration_afshin/foundation_model
 docker exec -it <container-name> bash
 
 # Inside container
@@ -119,104 +192,154 @@ uv run python ./tx-pizero/src/inference/inference_client.py \
     -o teleop_mode \
     --actions_per_chunk 50 \
     --chunk_size_threshold 0.5
-
 ```
 
-**Terminal 3 - Run Evaluation:**
+#### Terminal 3 - Run Evaluation
+
 ```bash
-cd <assignment_foundation_integration>/ros
+cd assignment_foundation_integration_afshin/ros
 docker exec -it <container-name> bash
 
 cd scripts
 ./analyze_joint.sh /Teleoperation_Success_2025-4-27_9-14-33_teleop_session_1745712875_9081492.bag
 ```
 
-**Outputs:**
-- `client_server_2/org.csv`
-- `client_server_2/infer.csv`
-- `client_server_2/all_joints_comparison.png`
+#### Outputs
+```
+client_server/
+├── org.csv
+├── infer.csv
+└── all_joints_comparison.png
+```
+
+</details>
 
 ---
 
-## 📈 Comparing Results
+## 📊 Results Analysis
 
-After running all three experiments, use the comparison script to generate comprehensive analysis:
+### Generate Comparison Plots
+
+After running all three experiments:
 
 ```bash
-cd <assignment_foundation_integration>/ros
+cd assignment_foundation_integration/ros
 docker exec -it <container-name> bash
 cd scripts
 
-# Inside container
+# Generate comprehensive analysis
 uv run python ./plot.py
 ```
 
 **Generated Files:**
-- `comparison_joints.png` - Side-by-side joint tracking comparison
-- `comparison_errors.png` - MAE/RMSE analysis
----
-
-## 🔍 Understanding the Results
-
-### Key Metrics
-
-1. **Tracking Accuracy:**
-   - **MAE (Mean Absolute Error):** Average position error per joint
-   - **RMSE (Root Mean Square Error):** Error with emphasis on large deviations
-
-
-### Expected Behavior
-
-#### With Artificial Delay (0.8s):
-- **Synchronous:** Blocks for ~800ms per inference
-- **Threading:** Control loop continues at 50Hz, inference runs in parallel
-- **Server-Client:** Similar to threading, plus network overhead
-
-![Results](ros/scripts/results/comparison_joints_dealy.png)
-![Results](ros/scripts/results/comparison_errors_heavy_delay.png)
-
-#### Without Delay (Pure ACT):
-- **All Methods:** Similar performance since ACT inference is fast
-- **Minor Differences:** 
-  - Threading: Small overhead from thread synchronization
-  - Server-Client: Network latency adds a bit of delay
-
-![Results](ros/scripts/results/comparison_joints.png)
-![Results](ros/scripts/results/comparison_errors.png)
-
-#### Trying higher action buffer Based on analysis with inference_profiler.py
-- **Lower MAE:** It means working at higher action buffer size (being conservative), we have Smaller errors on average, but with occasional large spikes
-- **Higher MSE:** It means we have more consistent errors, but slightly larger on average
-
-![Results](ros/scripts/results/comparison_joints_inference_5_10.png)
-![Results](ros/scripts/results/comparison_errors_inference_5_10.png)
-
-When inference is fast relative to the control cycle:
-- Synchronous works fine (inference completes within one cycle)
-- Async methods add overhead without significant benefit
-- All methods track similarly well
-
-For heavy models (PI0, SmolVLA):
-- Synchronous: Robot freezes during inference ❌
-- Async (Threading/Server-Client): Robot continues smoothly ✅
+- `comparison_joints.svg` - Joint tracking comparison
+- `comparison_errors.svg` - MAE/RMSE analysis
 
 ---
 
-## 📝 Conclusion
+## 📈 Key Findings
 
-This implementation demonstrates two approaches to asynchronous inference:
+### Performance Metrics
 
-1. **Threading:** Ideal for single-machine deployments
-2. **Server-Client:** Ideal for distributed robotics systems
-
----
-
-## 👨‍💻 Author Notes
-
-**Approach:**
-- Started with pure ACT (lightweight, minimal benefits visible)
-- Added 0.8s artificial delay to simulate heavy models
-- This clearly demonstrates async benefits for real-world scenarios
+| Metric | Description | Best Value |
+|--------|-------------|------------|
+| **MAE** | Mean Absolute Error | Lower is better |
+| **RMSE** | Root Mean Square Error | Lower is better |
 
 ---
 
+### Scenario 1: With Artificial Delay (0.8s)
+
+**Simulates heavy models like PI0 or SmolVLA**
+
+<div align="center">
+
+#### Joint Tracking Comparison
+![Joint Tracking with Delay](ros/scripts/results/comparison_joints_dealy.svg)
+
+#### Error Analysis
+![Error Analysis with Delay](ros/scripts/results/comparison_errors_heavy_delay.svg)
+
+</div>
+
+**Observations:**
+- ❌ **Synchronous**: Blocks for ~800ms per inference, causing severe tracking lag
+- ✅ **Threading**: Control loop maintains 50Hz, smooth tracking
+- ✅ **Server-Client**: Similar to threading with minimal network overhead
+
+---
+
+### Scenario 2: Without Delay (Pure ACT)
+
+**Lightweight model with fast inference**
+
+<div align="center">
+
+#### Joint Tracking Comparison
+![Joint Tracking Pure ACT](ros/scripts/results/comparison_joints.svg)
+
+#### Error Analysis
+![Error Analysis Pure ACT](ros/scripts/results/comparison_errors.svg)
+
+</div>
+
+**Observations:**
+- ✅ **All Methods**: ~Similar performance (ACT inference is fast)
+- **Threading**: Minimal overhead from thread synchronization
+- **Server-Client**: Small network latency (~few ms)
+
+---
+
+### Scenario 3: Higher Action Buffer Optimization
+
+**Based on inference_profiler.py analysis**
+
+<div align="center">
+
+#### Joint Tracking Comparison
+![Joint Tracking Buffer Optimization](ros/scripts/results/comparison_joints_inference_5_10.svg)
+
+#### Error Analysis
+![Error Analysis Buffer Optimization](ros/scripts/results/comparison_errors_inference_5_10.svg)
+
+</div>
+
+**Trade-offs:**
+- **Lower MAE**: Smaller errors on average (conservative buffering)
+- **Higher RMSE**: More consistent errors, with occasional large spikes
+
+---
+
+## 🎓 Conclusion
+
+### Key Takeaways
+
+#### When to Use Each Approach
+
+| Scenario | Recommended Method | Reason |
+|----------|-------------------|---------|
+| Lightweight models | **Synchronous** | Simple, no overhead needed |
+| Heavy models on single machine | **Threading** | Non-blocking with minimal overhead |
+| Multi-robot/edge deployment | **Server-Client** | Distributed, scalable architecture |
+
+#### Performance Summary
+
+```
+Fast Inference (< control cycle):
+├── Synchronous ✅ Works fine
+├── Threading ⚠️ Adds unnecessary overhead
+└── Server-Client ⚠️ Network latency without benefit
+
+Heavy Inference (> control cycle):
+├── Synchronous ❌ Robot freezes
+├── Threading ✅ Smooth operation
+└── Server-Client ✅ Smooth + distributed benefits
+```
+
+**Buffer Optimization:**
+- Conservative buffering (higher threshold) → Lower MAE
+- Aggressive buffering (lower threshold) → Lower latency, higher variance
+
+<div align="center">
+<b>Built for robust, production-ready robot control systems</b>
+</div>
